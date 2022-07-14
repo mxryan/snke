@@ -1,8 +1,10 @@
 mod snake;
+mod menu;
 
+use crate::snake::SnakePlugin;
 use bevy::math::const_vec3;
 use bevy::prelude::*;
-use crate::snake::SnakePlugin;
+use crate::menu::MenuPlugin;
 
 const BACKGROUND_COLOR: Color = Color::rgb(0.95, 0.4, 0.4);
 
@@ -17,21 +19,15 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(SnakePlugin)
+        .add_plugin(MenuPlugin)
         .insert_resource(ClearColor(BACKGROUND_COLOR))
+        .add_state(GameState::Menu)
         .add_startup_system(setup)
         .add_system(bevy::input::system::exit_on_esc_system)
-        .add_system(spawn_food)
         .run();
 }
 
-
-
 fn setup(mut commands: Commands) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-}
-
-
-
-fn spawn_food() {
-
+    commands.spawn_bundle(UiCameraBundle::default());
 }
