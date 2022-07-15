@@ -10,7 +10,8 @@ pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(SystemSet::on_enter(GameState::Menu).with_system(setup_menu))
-            .add_system_set(SystemSet::on_update(GameState::Menu).with_system(button_system));
+            .add_system_set(SystemSet::on_update(GameState::Menu).with_system(button_system))
+            .add_system_set(SystemSet::on_exit(GameState::Menu).with_system(despawn_button));
     }
 }
 
@@ -66,7 +67,6 @@ fn button_system(
                 text.sections[0].value = "Press".to_string();
                 *color = PRESSED_BUTTON.into();
                 game_state.set(GameState::Game).unwrap();
-
             }
             Interaction::Hovered => {
                 text.sections[0].value = "Hover".to_string();
@@ -77,5 +77,11 @@ fn button_system(
                 *color = NORMAL_BUTTON.into();
             }
         }
+    }
+}
+
+fn despawn_button(mut commands: Commands, buttons: Query<Entity, With<Button>>) {
+    for ent in buttons.iter() {
+        commands.entity(ent).despawn_recursive();
     }
 }

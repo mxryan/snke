@@ -10,7 +10,9 @@ pub struct SnakePlugin;
 impl Plugin for SnakePlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(SystemSet::on_enter(GameState::Game).with_system(spawn_snake))
-            .add_system_set(SystemSet::on_update(GameState::Game).with_system(move_snake));
+            .add_system_set(SystemSet::on_update(GameState::Game).with_system(move_snake))
+            .add_system_set(SystemSet::on_enter(GameState::Pause).with_system(handle_paused))
+            .add_system_set(SystemSet::on_resume(GameState::Game).with_system(handle_resume));
     }
 }
 
@@ -30,10 +32,14 @@ struct Snake {
 
 fn move_snake(
     keyboard_input: Res<Input<KeyCode>>,
-    mut transform_query: Query<(&mut Transform, &mut Snake)>,
+    mut snake_xform_query: Query<(&mut Transform, &mut Snake)>,
     time: Res<Time>,
 ) {
-    let (mut snake_head_xform, mut snake) = transform_query.single_mut();
+    let (mut snake_head_xform, mut snake) = snake_xform_query.single_mut();
+    if snake.speed == 0.0 {
+        println!("SKIPPPTTTTT");
+        return;
+    }
     if keyboard_input.just_pressed(KeyCode::Left) || keyboard_input.just_pressed(KeyCode::A) {
         snake.direction = SnakeDirection::LEFT;
     }
@@ -92,4 +98,14 @@ fn spawn_snake(mut commands: Commands) {
             },
             ..default()
         });
+}
+
+fn handle_paused(mut snake_xform_query: Query<&mut Snake>) {
+    let mut snake = snake_xform_query.single_mut();
+    snake.speed = 0.0;
+}
+
+fn handle_resume(mut snake_xform_query: Query<&mut Snake>) {
+    let mut snake = snake_xform_query.single_mut();
+    snake.speed = 150.0;
 }

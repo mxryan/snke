@@ -1,10 +1,12 @@
 mod snake;
 mod menu;
+mod pause;
 
 use crate::snake::SnakePlugin;
 use bevy::math::const_vec3;
 use bevy::prelude::*;
 use crate::menu::MenuPlugin;
+use crate::pause::PausePlugin;
 
 const BACKGROUND_COLOR: Color = Color::rgb(0.95, 0.4, 0.4);
 
@@ -13,6 +15,7 @@ enum GameState {
     Splash,
     Menu,
     Game,
+    Pause
 }
 
 fn main() {
@@ -20,6 +23,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(SnakePlugin)
         .add_plugin(MenuPlugin)
+        .add_plugin(PausePlugin)
         .insert_resource(ClearColor(BACKGROUND_COLOR))
         .add_state(GameState::Menu)
         .add_startup_system(setup)
