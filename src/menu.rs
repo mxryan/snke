@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use crate::GameState;
+use bevy::prelude::*;
 
 const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
@@ -17,8 +17,6 @@ impl Plugin for MenuPlugin {
 
 #[derive(Component)]
 pub struct ButtonActive(bool);
-
-
 
 fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
@@ -58,7 +56,7 @@ fn button_system(
         (Changed<Interaction>, With<Button>),
     >,
     mut text_query: Query<&mut Text>,
-    mut game_state: ResMut<State<GameState>>
+    mut game_state: ResMut<State<GameState>>,
 ) {
     for (interaction, mut color, children) in interaction_query.iter_mut() {
         let mut text = text_query.get_mut(children[0]).unwrap();

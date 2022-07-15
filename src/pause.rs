@@ -1,6 +1,6 @@
+use crate::GameState;
 use bevy::input::keyboard::KeyboardInput;
 use bevy::prelude::*;
-use crate::GameState;
 
 pub struct PausePlugin;
 
@@ -16,7 +16,6 @@ fn handle_pause(mut keyboard: ResMut<Input<KeyCode>>, mut game_state: ResMut<Sta
         println!("pause");
         game_state.push(GameState::Pause).unwrap();
         keyboard.clear();
-
     }
 }
 
@@ -27,4 +26,3 @@ fn handle_unpause(mut keyboard: ResMut<Input<KeyCode>>, mut game_state: ResMut<S
         keyboard.clear();
     }
 }
-
