@@ -18,6 +18,8 @@ enum GameState {
     Pause,
 }
 
+// https://mbuffett.com/posts/bevy-snake-tutorial/
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)

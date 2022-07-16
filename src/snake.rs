@@ -3,7 +3,9 @@ use bevy::math::const_vec3;
 use bevy::prelude::*;
 
 const SNAKE_HEAD_SIZE: Vec3 = const_vec3!([40.0, 40.0, 0.0]);
+const SNAKE_BODY_SIZE: Vec3 = const_vec3!([40.0, 40.0, 0.0]);
 const SNAKE_HEAD_COLOR: Color = Color::rgb(0.3, 0.4, 0.9);
+const STARTING_NUM_OF_BODY_SEGMENTS: u8 = 3;
 
 pub struct SnakePlugin;
 
@@ -24,22 +26,22 @@ enum SnakeDirection {
 }
 
 #[derive(Component)]
-struct Snake {
+struct SnakeHead {
     body_length: u8,
     speed: f32,
     direction: SnakeDirection,
 }
 
+#[derive(Component)]
+struct SnakeBodySegment;
+
 fn move_snake(
     keyboard_input: Res<Input<KeyCode>>,
-    mut snake_xform_query: Query<(&mut Transform, &mut Snake)>,
+    mut snake_xform_query: Query<(&mut Transform, &mut SnakeHead)>,
     time: Res<Time>,
 ) {
     let (mut snake_head_xform, mut snake) = snake_xform_query.single_mut();
-    if snake.speed == 0.0 {
-        println!("SKIPPPTTTTT");
-        return;
-    }
+
     if keyboard_input.just_pressed(KeyCode::Left) || keyboard_input.just_pressed(KeyCode::A) {
         snake.direction = SnakeDirection::LEFT;
     }
@@ -79,10 +81,10 @@ fn move_snake(
 }
 
 fn spawn_snake(mut commands: Commands) {
-    commands
+     commands
         .spawn()
-        .insert(Snake {
-            body_length: 0,
+        .insert(SnakeHead {
+            body_length: STARTING_NUM_OF_BODY_SEGMENTS,
             speed: 150.0,
             direction: SnakeDirection::UP,
         })
@@ -100,12 +102,12 @@ fn spawn_snake(mut commands: Commands) {
         });
 }
 
-fn handle_paused(mut snake_xform_query: Query<&mut Snake>) {
+fn handle_paused(mut snake_xform_query: Query<&mut SnakeHead>) {
     let mut snake = snake_xform_query.single_mut();
     snake.speed = 0.0;
 }
 
-fn handle_resume(mut snake_xform_query: Query<&mut Snake>) {
+fn handle_resume(mut snake_xform_query: Query<&mut SnakeHead>) {
     let mut snake = snake_xform_query.single_mut();
     snake.speed = 150.0;
 }
