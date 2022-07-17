@@ -6,12 +6,14 @@ const SNAKE_HEAD_SIZE: Vec3 = const_vec3!([40.0, 40.0, 0.0]);
 const SNAKE_BODY_SIZE: Vec3 = const_vec3!([40.0, 40.0, 0.0]);
 const SNAKE_HEAD_COLOR: Color = Color::rgb(0.3, 0.4, 0.9);
 const STARTING_NUM_OF_BODY_SEGMENTS: u8 = 3;
+const SNAKE_SEGMENT_COLOR: Color = Color::rgb(0.3, 0.3, 0.3);
 
 pub struct SnakePlugin;
 
 impl Plugin for SnakePlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_enter(GameState::Game).with_system(spawn_snake))
+        app.insert_resource(SnakeSegments::default())
+            .add_system_set(SystemSet::on_enter(GameState::Game).with_system(spawn_snake))
             .add_system_set(SystemSet::on_update(GameState::Game).with_system(move_snake))
             .add_system_set(SystemSet::on_enter(GameState::Pause).with_system(handle_paused))
             .add_system_set(SystemSet::on_resume(GameState::Game).with_system(handle_resume));
@@ -34,6 +36,9 @@ struct SnakeHead {
 
 #[derive(Component)]
 struct SnakeBodySegment;
+
+#[derive(Default)]
+struct SnakeSegments(Vec<Entity>);
 
 fn move_snake(
     keyboard_input: Res<Input<KeyCode>>,
@@ -81,7 +86,7 @@ fn move_snake(
 }
 
 fn spawn_snake(mut commands: Commands) {
-     commands
+    commands
         .spawn()
         .insert(SnakeHead {
             body_length: STARTING_NUM_OF_BODY_SEGMENTS,
