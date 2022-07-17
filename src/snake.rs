@@ -3,7 +3,7 @@ use bevy::math::const_vec3;
 use bevy::prelude::*;
 
 const SNAKE_HEAD_SIZE: Vec3 = const_vec3!([40.0, 40.0, 0.0]);
-const SNAKE_BODY_SIZE: Vec3 = const_vec3!([40.0, 40.0, 0.0]);
+const SNAKE_SEGMENT_SIZE: Vec3 = const_vec3!([40.0, 40.0, 0.0]);
 const SNAKE_HEAD_COLOR: Color = Color::rgb(0.3, 0.4, 0.9);
 const STARTING_NUM_OF_BODY_SEGMENTS: u8 = 3;
 const SNAKE_SEGMENT_COLOR: Color = Color::rgb(0.3, 0.3, 0.3);
@@ -85,26 +85,47 @@ fn move_snake(
     snake_head_xform.translation = new_translation;
 }
 
-fn spawn_snake(mut commands: Commands) {
+fn spawn_snake(mut commands: Commands, mut snake_segments: ResMut<SnakeSegments>) {
+    snake_segments.0.push(
+        commands
+            .spawn()
+            .insert(SnakeHead {
+                body_length: STARTING_NUM_OF_BODY_SEGMENTS,
+                speed: 150.0,
+                direction: SnakeDirection::UP,
+            })
+            .insert_bundle(SpriteBundle {
+                transform: Transform {
+                    translation: Vec3::new(0.0, -240.0, 0.0),
+                    scale: SNAKE_HEAD_SIZE,
+                    ..default()
+                },
+                sprite: Sprite {
+                    color: SNAKE_HEAD_COLOR,
+                    ..default()
+                },
+                ..default()
+            }).id()
+    )
+
+}
+
+fn spawn_segment(mut commands: Commands, x: f32, y: f32) -> Entity {
     commands
-        .spawn()
-        .insert(SnakeHead {
-            body_length: STARTING_NUM_OF_BODY_SEGMENTS,
-            speed: 150.0,
-            direction: SnakeDirection::UP,
-        })
-        .insert_bundle(SpriteBundle {
+        .spawn_bundle(SpriteBundle {
             transform: Transform {
-                translation: Vec3::new(0.0, -240.0, 0.0),
-                scale: SNAKE_HEAD_SIZE,
+                translation: Vec3::new(x, y, 0.0),
+                scale: SNAKE_SEGMENT_SIZE,
                 ..default()
             },
             sprite: Sprite {
-                color: SNAKE_HEAD_COLOR,
+                color: SNAKE_SEGMENT_COLOR,
                 ..default()
             },
             ..default()
-        });
+        })
+        .insert(SnakeBodySegment)
+        .id()
 }
 
 fn handle_paused(mut snake_xform_query: Query<&mut SnakeHead>) {
