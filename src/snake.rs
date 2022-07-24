@@ -2,8 +2,8 @@ use crate::{App, GameState, Plugin};
 use bevy::math::const_vec3;
 use bevy::prelude::*;
 
-const SNAKE_HEAD_SIZE: Vec3 = const_vec3!([40.0, 40.0, 0.0]);
-const SNAKE_SEGMENT_SIZE: Vec3 = const_vec3!([40.0, 40.0, 0.0]);
+const SNAKE_HEAD_SIZE: Vec3 = const_vec3!([30.0, 30.0, 0.0]);
+const SNAKE_SEGMENT_SIZE: Vec3 = const_vec3!([30.0, 30.0, 0.0]);
 const SNAKE_HEAD_COLOR: Color = Color::rgb(0.3, 0.4, 0.9);
 const STARTING_NUM_OF_BODY_SEGMENTS: u8 = 3;
 const SNAKE_SEGMENT_COLOR: Color = Color::rgb(0.3, 0.3, 0.3);
@@ -44,6 +44,9 @@ fn move_snake(
     keyboard_input: Res<Input<KeyCode>>,
     mut snake_xform_query: Query<(&mut Transform, &mut SnakeHead)>,
     time: Res<Time>,
+    mut snake_segments: ResMut<SnakeSegments>,
+    mut commands: Commands,
+    mut snake_body_seg_xforms: Query<(&mut Transform, &SnakeBodySegment), Without<SnakeHead>>
 ) {
     let (mut snake_head_xform, mut snake) = snake_xform_query.single_mut();
 
@@ -82,10 +85,25 @@ fn move_snake(
         ),
     };
 
+    let mut last_seg_pos =snake_head_xform.translation;
+
     snake_head_xform.translation = new_translation;
+
+    let mut curr_seg_pos = Vec3::new(0.0,0.0,0.0);
+
+    for snake_seg_entity in snake_segments.0.iter() {
+        if let Ok((mut snake_body_seg_xform, _)) = snake_body_seg_xforms.get_mut(*snake_seg_entity) {
+            curr_seg_pos = snake_body_seg_xform.translation;
+            snake_body_seg_xform.translation = last_seg_pos;
+            last_seg_pos = curr_seg_pos;
+        }
+    }
 }
 
+
 fn spawn_snake(mut commands: Commands, mut snake_segments: ResMut<SnakeSegments>) {
+    let mut x = 0.0;
+    let mut y = -100.0;
     snake_segments.0.push(
         commands
             .spawn()
@@ -96,7 +114,7 @@ fn spawn_snake(mut commands: Commands, mut snake_segments: ResMut<SnakeSegments>
             })
             .insert_bundle(SpriteBundle {
                 transform: Transform {
-                    translation: Vec3::new(0.0, -240.0, 0.0),
+                    translation: Vec3::new(x, y, 0.0),
                     scale: SNAKE_HEAD_SIZE,
                     ..default()
                 },
@@ -105,12 +123,18 @@ fn spawn_snake(mut commands: Commands, mut snake_segments: ResMut<SnakeSegments>
                     ..default()
                 },
                 ..default()
-            }).id()
-    )
+            })
+            .id(),
+    );
 
+    for _ in 0..STARTING_NUM_OF_BODY_SEGMENTS {
+        snake_segments
+            .0
+            .push(spawn_segment(&mut commands, 1.0, 1.0))
+    }
 }
 
-fn spawn_segment(mut commands: Commands, x: f32, y: f32) -> Entity {
+fn spawn_segment(commands: &mut Commands, x: f32, y: f32) -> Entity {
     commands
         .spawn_bundle(SpriteBundle {
             transform: Transform {
