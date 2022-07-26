@@ -45,7 +45,6 @@ fn move_snake(
     mut snake_xform_query: Query<(&mut Transform, &mut SnakeHead)>,
     time: Res<Time>,
     mut snake_segments: ResMut<SnakeSegments>,
-    mut commands: Commands,
     mut snake_body_seg_xforms: Query<(&mut Transform, &SnakeBodySegment), Without<SnakeHead>>
 ) {
     let (mut snake_head_xform, mut snake) = snake_xform_query.single_mut();
