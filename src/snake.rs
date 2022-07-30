@@ -5,7 +5,7 @@ use bevy::prelude::*;
 const SNAKE_HEAD_SIZE: Vec3 = const_vec3!([30.0, 30.0, 0.0]);
 const SNAKE_SEGMENT_SIZE: Vec3 = const_vec3!([30.0, 30.0, 0.0]);
 const SNAKE_HEAD_COLOR: Color = Color::rgb(0.3, 0.4, 0.9);
-const STARTING_NUM_OF_BODY_SEGMENTS: u8 = 3;
+const STARTING_NUM_OF_BODY_SEGMENTS: u8 = 120;
 const SNAKE_SEGMENT_COLOR: Color = Color::rgb(0.3, 0.3, 0.3);
 
 pub struct SnakePlugin;
@@ -45,7 +45,7 @@ fn move_snake(
     mut snake_xform_query: Query<(&mut Transform, &mut SnakeHead)>,
     time: Res<Time>,
     mut snake_segments: ResMut<SnakeSegments>,
-    mut snake_body_seg_xforms: Query<(&mut Transform, &SnakeBodySegment), Without<SnakeHead>>
+    mut snake_body_seg_xforms: Query<(&mut Transform, &SnakeBodySegment), Without<SnakeHead>>,
 ) {
     let (mut snake_head_xform, mut snake) = snake_xform_query.single_mut();
 
@@ -84,21 +84,21 @@ fn move_snake(
         ),
     };
 
-    let mut last_seg_pos =snake_head_xform.translation;
+    let mut last_seg_pos = snake_head_xform.translation;
 
     snake_head_xform.translation = new_translation;
 
-    let mut curr_seg_pos = Vec3::new(0.0,0.0,0.0);
+    let mut curr_seg_pos = Vec3::new(0.0, 0.0, 0.0);
 
     for snake_seg_entity in snake_segments.0.iter() {
-        if let Ok((mut snake_body_seg_xform, _)) = snake_body_seg_xforms.get_mut(*snake_seg_entity) {
+        if let Ok((mut snake_body_seg_xform, _)) = snake_body_seg_xforms.get_mut(*snake_seg_entity)
+        {
             curr_seg_pos = snake_body_seg_xform.translation;
             snake_body_seg_xform.translation = last_seg_pos;
             last_seg_pos = curr_seg_pos;
         }
     }
 }
-
 
 fn spawn_snake(mut commands: Commands, mut snake_segments: ResMut<SnakeSegments>) {
     let mut x = 0.0;

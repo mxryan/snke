@@ -3,7 +3,27 @@ name = "snake"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
 
 [dependencies]
-bevy={version = "*", features = ["dynamic"]}
+bevy = { version = "0.7.0", features = [
+    "dynamic",
+    "bevy_gilrs",
+    "bevy_winit",
+    "render",
+    "png",
+    "hdr",
+    "vorbis",
+    "x11",
+    "filesystem_watcher"] }
+
+bevy_kira_audio = { version = "0.10.0", features = [
+    "wav",
+    "flac",
+    "mp3",
+    "ogg",
+] }

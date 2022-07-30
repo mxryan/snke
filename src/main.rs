@@ -1,12 +1,14 @@
 mod menu;
 mod pause;
 mod snake;
+mod audio;
 
 use crate::menu::MenuPlugin;
 use crate::pause::PausePlugin;
 use crate::snake::SnakePlugin;
 use bevy::math::const_vec3;
 use bevy::prelude::*;
+use crate::audio::GameAudioPlugin;
 
 const BACKGROUND_COLOR: Color = Color::rgb(0.95, 0.4, 0.4);
 
@@ -26,6 +28,7 @@ fn main() {
         .add_plugin(SnakePlugin)
         .add_plugin(MenuPlugin)
         .add_plugin(PausePlugin)
+        .add_plugin(GameAudioPlugin)
         .insert_resource(ClearColor(BACKGROUND_COLOR))
         .add_state(GameState::Menu)
         .add_startup_system(setup)
