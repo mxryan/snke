@@ -5,7 +5,7 @@ use bevy::prelude::*;
 const SNAKE_HEAD_SIZE: Vec3 = const_vec3!([30.0, 30.0, 0.0]);
 const SNAKE_SEGMENT_SIZE: Vec3 = const_vec3!([30.0, 30.0, 0.0]);
 const SNAKE_HEAD_COLOR: Color = Color::rgb(0.3, 0.4, 0.9);
-const STARTING_NUM_OF_BODY_SEGMENTS: u8 = 120;
+const STARTING_NUM_OF_BODY_SEGMENTS: u32 = 320;
 const SNAKE_SEGMENT_COLOR: Color = Color::rgb(0.3, 0.3, 0.3);
 
 pub struct SnakePlugin;
@@ -29,7 +29,7 @@ enum SnakeDirection {
 
 #[derive(Component)]
 struct SnakeHead {
-    body_length: u8,
+    body_length: u32,
     speed: f32,
     direction: SnakeDirection,
 }
@@ -40,6 +40,9 @@ struct SnakeBodySegment;
 #[derive(Default)]
 struct SnakeSegments(Vec<Entity>);
 
+// todo: check if the snake has moved a minumum distance (width of snake) before allowing direction change
+// todo: prevent opposite movements (eg down when going up or left when going right)
+// todo make snake boduy segs overlap less
 fn move_snake(
     keyboard_input: Res<Input<KeyCode>>,
     mut snake_xform_query: Query<(&mut Transform, &mut SnakeHead)>,
