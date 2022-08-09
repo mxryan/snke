@@ -2,8 +2,9 @@ use crate::{App, GameState, Plugin};
 use bevy::math::const_vec3;
 use bevy::prelude::*;
 
-const SNAKE_HEAD_SIZE: Vec3 = const_vec3!([30.0, 30.0, 0.0]);
-const SNAKE_SEGMENT_SIZE: Vec3 = const_vec3!([30.0, 30.0, 0.0]);
+const SNAKE_SQUARE_SIDE_LEN: f32 = 30.0;
+const SNAKE_HEAD_SIZE: Vec3 = const_vec3!([SNAKE_SQUARE_SIDE_LEN, SNAKE_SQUARE_SIDE_LEN, 0.0]);
+const SNAKE_SEGMENT_SIZE: Vec3 = const_vec3!([SNAKE_SQUARE_SIDE_LEN, SNAKE_SQUARE_SIDE_LEN, 0.0]);
 const SNAKE_HEAD_COLOR: Color = Color::rgb(0.3, 0.4, 0.9);
 const STARTING_NUM_OF_BODY_SEGMENTS: u32 = 320;
 const SNAKE_SEGMENT_COLOR: Color = Color::rgb(0.3, 0.3, 0.3);
@@ -20,6 +21,7 @@ impl Plugin for SnakePlugin {
     }
 }
 
+#[derive(Copy, Clone, PartialEq)]
 enum SnakeDirection {
     UP,
     DOWN,
@@ -32,6 +34,7 @@ struct SnakeHead {
     body_length: u32,
     speed: f32,
     direction: SnakeDirection,
+    distance_traveled_since_last_dir_change: f32
 }
 
 #[derive(Component)]
@@ -52,6 +55,11 @@ fn move_snake(
 ) {
     let (mut snake_head_xform, mut snake) = snake_xform_query.single_mut();
 
+    // if snake.distance_traveled_since_last_dir_change < SNAKE_SQUARE_SIDE_LEN {
+    //     return;
+    // }
+    let last_direction = snake.direction;
+
     if keyboard_input.just_pressed(KeyCode::Left) || keyboard_input.just_pressed(KeyCode::A) {
         snake.direction = SnakeDirection::LEFT;
     }
@@ -64,24 +72,31 @@ fn move_snake(
     if keyboard_input.just_pressed(KeyCode::Down) || keyboard_input.just_pressed(KeyCode::S) {
         snake.direction = SnakeDirection::DOWN;
     }
+
+    let delta_position = snake.speed * time.delta_seconds();
+    if snake.direction == last_direction {
+        snake.distance_traveled_since_last_dir_change += delta_position;
+    } else {
+        snake.distance_traveled_since_last_dir_change = 0.0;
+    }
     let new_translation = match snake.direction {
         SnakeDirection::UP => Vec3::new(
             snake_head_xform.translation.x,
-            snake_head_xform.translation.y + snake.speed * time.delta_seconds(),
+            snake_head_xform.translation.y + delta_position,
             snake_head_xform.translation.z,
         ),
         SnakeDirection::DOWN => Vec3::new(
             snake_head_xform.translation.x,
-            snake_head_xform.translation.y - snake.speed * time.delta_seconds(),
+            snake_head_xform.translation.y - delta_position,
             snake_head_xform.translation.z,
         ),
         SnakeDirection::LEFT => Vec3::new(
-            snake_head_xform.translation.x - snake.speed * time.delta_seconds(),
+            snake_head_xform.translation.x - delta_position,
             snake_head_xform.translation.y,
             snake_head_xform.translation.z,
         ),
         SnakeDirection::RIGHT => Vec3::new(
-            snake_head_xform.translation.x + snake.speed * time.delta_seconds(),
+            snake_head_xform.translation.x + delta_position,
             snake_head_xform.translation.y,
             snake_head_xform.translation.z,
         ),
@@ -113,6 +128,7 @@ fn spawn_snake(mut commands: Commands, mut snake_segments: ResMut<SnakeSegments>
                 body_length: STARTING_NUM_OF_BODY_SEGMENTS,
                 speed: 150.0,
                 direction: SnakeDirection::UP,
+                distance_traveled_since_last_dir_change: 0.0
             })
             .insert_bundle(SpriteBundle {
                 transform: Transform {
