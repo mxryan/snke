@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use crate::{App, GameState, Plugin};
 use bevy::math::const_vec3;
 use bevy::prelude::*;
@@ -11,11 +12,23 @@ const SNAKE_SEGMENT_COLOR: Color = Color::rgb(0.3, 0.3, 0.3);
 
 pub struct SnakePlugin;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(SystemLabel)]
+enum SystemLabel {
+    EnqueueMovement,
+    HandleSnakeMovement
+}
+
 impl Plugin for SnakePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(SnakeSegments::default())
+            .insert_resource(DirectionQueue::default())
             .add_system_set(SystemSet::on_enter(GameState::Game).with_system(spawn_snake))
-            .add_system_set(SystemSet::on_update(GameState::Game).with_system(move_snake))
+            .add_system_set(
+                SystemSet::on_update(GameState::Game)
+                    .with_system(move_snake_2.label(SystemLabel::HandleSnakeMovement))
+                    .with_system(enqueue_direction.before(SystemLabel::HandleSnakeMovement))
+            )
             .add_system_set(SystemSet::on_enter(GameState::Pause).with_system(handle_paused))
             .add_system_set(SystemSet::on_resume(GameState::Game).with_system(handle_resume));
     }
@@ -43,11 +56,32 @@ struct SnakeBodySegment;
 #[derive(Default)]
 struct SnakeSegments(Vec<Entity>);
 
+#[derive(Default)]
+struct DirectionQueue(VecDeque<SnakeDirection>);
+
+fn enqueue_direction(
+    keyboard_input: Res<Input<KeyCode>>,
+    mut direction_queue: ResMut<DirectionQueue>
+) {
+    if keyboard_input.just_pressed(KeyCode::Left) || keyboard_input.just_pressed(KeyCode::A) {
+        direction_queue.0.push_back(SnakeDirection::LEFT);
+    }
+    if keyboard_input.just_pressed(KeyCode::Right) || keyboard_input.just_pressed(KeyCode::D) {
+        direction_queue.0.push_back(SnakeDirection::RIGHT);
+    }
+    if keyboard_input.just_pressed(KeyCode::Up) || keyboard_input.just_pressed(KeyCode::W) {
+        direction_queue.0.push_back(SnakeDirection::UP);
+    }
+    if keyboard_input.just_pressed(KeyCode::Down) || keyboard_input.just_pressed(KeyCode::S) {
+        direction_queue.0.push_back(SnakeDirection::DOWN);
+    }
+}
+
 // todo: check if the snake has moved a minumum distance (width of snake) before allowing direction change
 // todo: prevent opposite movements (eg down when going up or left when going right)
 // todo make snake boduy segs overlap less
-fn move_snake(
-    keyboard_input: Res<Input<KeyCode>>,
+fn move_snake_2(
+    mut direction_queue: ResMut<DirectionQueue>,
     mut snake_xform_query: Query<(&mut Transform, &mut SnakeHead)>,
     time: Res<Time>,
     mut snake_segments: ResMut<SnakeSegments>,
@@ -55,22 +89,9 @@ fn move_snake(
 ) {
     let (mut snake_head_xform, mut snake) = snake_xform_query.single_mut();
 
-    // if snake.distance_traveled_since_last_dir_change < SNAKE_SQUARE_SIDE_LEN {
-    //     return;
-    // }
     let last_direction = snake.direction;
-
-    if keyboard_input.just_pressed(KeyCode::Left) || keyboard_input.just_pressed(KeyCode::A) {
-        snake.direction = SnakeDirection::LEFT;
-    }
-    if keyboard_input.just_pressed(KeyCode::Right) || keyboard_input.just_pressed(KeyCode::D) {
-        snake.direction = SnakeDirection::RIGHT;
-    }
-    if keyboard_input.just_pressed(KeyCode::Up) || keyboard_input.just_pressed(KeyCode::W) {
-        snake.direction = SnakeDirection::UP;
-    }
-    if keyboard_input.just_pressed(KeyCode::Down) || keyboard_input.just_pressed(KeyCode::S) {
-        snake.direction = SnakeDirection::DOWN;
+    if direction_queue.0.len() > 0 {
+        snake.direction = direction_queue.0.pop_front().unwrap();
     }
 
     let delta_position = snake.speed * time.delta_seconds();
