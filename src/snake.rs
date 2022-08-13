@@ -77,7 +77,6 @@ fn enqueue_direction(
     }
 }
 
-// todo: check if the snake has moved a minumum distance (width of snake) before allowing direction change
 // todo: prevent opposite movements (eg down when going up or left when going right)
 // todo make snake boduy segs overlap less
 fn move_snake(
@@ -90,7 +89,7 @@ fn move_snake(
     let (mut snake_head_xform, mut snake) = snake_xform_query.single_mut();
 
     let last_direction = snake.direction;
-    if direction_queue.0.len() > 0 {
+    if direction_queue.0.len() > 0 && snake.distance_traveled_since_last_dir_change > SNAKE_SQUARE_SIDE_LEN {
         snake.direction = direction_queue.0.pop_front().unwrap();
     }
 
