@@ -26,7 +26,7 @@ impl Plugin for SnakePlugin {
             .add_system_set(SystemSet::on_enter(GameState::Game).with_system(spawn_snake))
             .add_system_set(
                 SystemSet::on_update(GameState::Game)
-                    .with_system(move_snake_2.label(SystemLabel::HandleSnakeMovement))
+                    .with_system(move_snake.label(SystemLabel::HandleSnakeMovement))
                     .with_system(enqueue_direction.before(SystemLabel::HandleSnakeMovement))
             )
             .add_system_set(SystemSet::on_enter(GameState::Pause).with_system(handle_paused))
@@ -80,7 +80,7 @@ fn enqueue_direction(
 // todo: check if the snake has moved a minumum distance (width of snake) before allowing direction change
 // todo: prevent opposite movements (eg down when going up or left when going right)
 // todo make snake boduy segs overlap less
-fn move_snake_2(
+fn move_snake(
     mut direction_queue: ResMut<DirectionQueue>,
     mut snake_xform_query: Query<(&mut Transform, &mut SnakeHead)>,
     time: Res<Time>,
