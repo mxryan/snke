@@ -1,7 +1,7 @@
-use std::collections::VecDeque;
 use crate::{App, GameState, Plugin};
 use bevy::math::const_vec3;
 use bevy::prelude::*;
+use std::collections::VecDeque;
 
 const SNAKE_SQUARE_SIDE_LEN: f32 = 30.0;
 const SNAKE_HEAD_SIZE: Vec3 = const_vec3!([SNAKE_SQUARE_SIDE_LEN, SNAKE_SQUARE_SIDE_LEN, 0.0]);
@@ -12,11 +12,10 @@ const SNAKE_SEGMENT_COLOR: Color = Color::rgb(0.3, 0.3, 0.3);
 
 pub struct SnakePlugin;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[derive(SystemLabel)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemLabel)]
 enum SystemLabel {
     EnqueueMovement,
-    HandleSnakeMovement
+    HandleSnakeMovement,
 }
 
 impl Plugin for SnakePlugin {
@@ -27,7 +26,7 @@ impl Plugin for SnakePlugin {
             .add_system_set(
                 SystemSet::on_update(GameState::Game)
                     .with_system(move_snake.label(SystemLabel::HandleSnakeMovement))
-                    .with_system(enqueue_direction.before(SystemLabel::HandleSnakeMovement))
+                    .with_system(enqueue_direction.before(SystemLabel::HandleSnakeMovement)),
             )
             .add_system_set(SystemSet::on_enter(GameState::Pause).with_system(handle_paused))
             .add_system_set(SystemSet::on_resume(GameState::Game).with_system(handle_resume));
@@ -42,12 +41,23 @@ enum SnakeDirection {
     RIGHT,
 }
 
+impl SnakeDirection {
+    fn is_opposite(self, other_direction: SnakeDirection) -> bool {
+        match other_direction {
+            SnakeDirection::UP => self == SnakeDirection::DOWN,
+            SnakeDirection::DOWN => self == SnakeDirection::UP,
+            SnakeDirection::LEFT => self == SnakeDirection::RIGHT,
+            SnakeDirection::RIGHT => self == SnakeDirection::LEFT,
+        }
+    }
+}
+
 #[derive(Component)]
 struct SnakeHead {
     body_length: u32,
     speed: f32,
     direction: SnakeDirection,
-    distance_traveled_since_last_dir_change: f32
+    distance_traveled_since_last_dir_change: f32,
 }
 
 #[derive(Component)]
@@ -61,23 +71,26 @@ struct DirectionQueue(VecDeque<SnakeDirection>);
 
 fn enqueue_direction(
     keyboard_input: Res<Input<KeyCode>>,
-    mut direction_queue: ResMut<DirectionQueue>
+    mut direction_queue: ResMut<DirectionQueue>,
+    mut snake: Query<&mut SnakeHead>,
 ) {
-    if keyboard_input.just_pressed(KeyCode::Left) || keyboard_input.just_pressed(KeyCode::A) {
+    let direction = snake.single_mut().direction;
+    // fixme: actually i think this is wrong, gotta look at the last thing in the
+    //  queue not the direction on the snake component
+    if keyboard_input.just_pressed(KeyCode::A) && !direction.is_opposite(SnakeDirection::LEFT) {
         direction_queue.0.push_back(SnakeDirection::LEFT);
     }
-    if keyboard_input.just_pressed(KeyCode::Right) || keyboard_input.just_pressed(KeyCode::D) {
+    if keyboard_input.just_pressed(KeyCode::D) && !direction.is_opposite(SnakeDirection::RIGHT) {
         direction_queue.0.push_back(SnakeDirection::RIGHT);
     }
-    if keyboard_input.just_pressed(KeyCode::Up) || keyboard_input.just_pressed(KeyCode::W) {
+    if keyboard_input.just_pressed(KeyCode::W) && !direction.is_opposite(SnakeDirection::UP) {
         direction_queue.0.push_back(SnakeDirection::UP);
     }
-    if keyboard_input.just_pressed(KeyCode::Down) || keyboard_input.just_pressed(KeyCode::S) {
+    if keyboard_input.just_pressed(KeyCode::S) && !direction.is_opposite(SnakeDirection::DOWN) {
         direction_queue.0.push_back(SnakeDirection::DOWN);
     }
 }
 
-// todo: prevent opposite movements (eg down when going up or left when going right)
 // todo make snake boduy segs overlap less
 fn move_snake(
     mut direction_queue: ResMut<DirectionQueue>,
@@ -89,7 +102,9 @@ fn move_snake(
     let (mut snake_head_xform, mut snake) = snake_xform_query.single_mut();
 
     let last_direction = snake.direction;
-    if direction_queue.0.len() > 0 && snake.distance_traveled_since_last_dir_change > SNAKE_SQUARE_SIDE_LEN {
+    if direction_queue.0.len() > 0
+        && snake.distance_traveled_since_last_dir_change > SNAKE_SQUARE_SIDE_LEN
+    {
         snake.direction = direction_queue.0.pop_front().unwrap();
     }
 
@@ -148,7 +163,7 @@ fn spawn_snake(mut commands: Commands, mut snake_segments: ResMut<SnakeSegments>
                 body_length: STARTING_NUM_OF_BODY_SEGMENTS,
                 speed: 150.0,
                 direction: SnakeDirection::UP,
-                distance_traveled_since_last_dir_change: 0.0
+                distance_traveled_since_last_dir_change: 0.0,
             })
             .insert_bundle(SpriteBundle {
                 transform: Transform {
