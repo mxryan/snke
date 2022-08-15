@@ -69,6 +69,8 @@ struct SnakeSegments(Vec<Entity>);
 #[derive(Default)]
 struct DirectionQueue(VecDeque<SnakeDirection>);
 
+// fixme: hey theres a bug. just mash the wasd keys and observe the resulting
+//  movement. its not good
 fn enqueue_direction(
     keyboard_input: Res<Input<KeyCode>>,
     mut direction_queue: ResMut<DirectionQueue>,
