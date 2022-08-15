@@ -12,12 +12,6 @@ const SNAKE_SEGMENT_COLOR: Color = Color::rgb(0.3, 0.3, 0.3);
 
 pub struct SnakePlugin;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemLabel)]
-enum SystemLabel {
-    EnqueueMovement,
-    HandleSnakeMovement,
-}
-
 impl Plugin for SnakePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(SnakeSegments::default())
@@ -31,6 +25,12 @@ impl Plugin for SnakePlugin {
             .add_system_set(SystemSet::on_enter(GameState::Pause).with_system(handle_paused))
             .add_system_set(SystemSet::on_resume(GameState::Game).with_system(handle_resume));
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemLabel)]
+enum SystemLabel {
+    EnqueueMovement,
+    HandleSnakeMovement,
 }
 
 #[derive(Copy, Clone, PartialEq)]
