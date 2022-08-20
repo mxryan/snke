@@ -41,17 +41,6 @@ enum SnakeDirection {
     RIGHT,
 }
 
-impl SnakeDirection {
-    fn is_opposite(self, other_direction: SnakeDirection) -> bool {
-        match other_direction {
-            SnakeDirection::UP => self == SnakeDirection::DOWN,
-            SnakeDirection::DOWN => self == SnakeDirection::UP,
-            SnakeDirection::LEFT => self == SnakeDirection::RIGHT,
-            SnakeDirection::RIGHT => self == SnakeDirection::LEFT,
-        }
-    }
-}
-
 #[derive(Component)]
 struct SnakeHead {
     body_length: u32,
@@ -79,16 +68,16 @@ fn enqueue_direction(
     let direction = snake.single_mut().direction;
     // fixme: actually i think this is wrong, gotta look at the last thing in the
     //  queue not the direction on the snake component
-    if keyboard_input.just_pressed(KeyCode::A) && !direction.is_opposite(SnakeDirection::LEFT) {
+    if keyboard_input.just_pressed(KeyCode::A) && direction != SnakeDirection::RIGHT {
         direction_queue.0.push_back(SnakeDirection::LEFT);
     }
-    if keyboard_input.just_pressed(KeyCode::D) && !direction.is_opposite(SnakeDirection::RIGHT) {
+    if keyboard_input.just_pressed(KeyCode::D) && direction != SnakeDirection::LEFT {
         direction_queue.0.push_back(SnakeDirection::RIGHT);
     }
-    if keyboard_input.just_pressed(KeyCode::W) && !direction.is_opposite(SnakeDirection::UP) {
+    if keyboard_input.just_pressed(KeyCode::W) && direction != SnakeDirection::DOWN {
         direction_queue.0.push_back(SnakeDirection::UP);
     }
-    if keyboard_input.just_pressed(KeyCode::S) && !direction.is_opposite(SnakeDirection::DOWN) {
+    if keyboard_input.just_pressed(KeyCode::S) && direction != SnakeDirection::UP {
         direction_queue.0.push_back(SnakeDirection::DOWN);
     }
 }
