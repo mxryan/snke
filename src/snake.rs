@@ -1,3 +1,4 @@
+use crate::collision::Collider;
 use crate::{App, GameState, Plugin};
 use bevy::math::const_vec3;
 use bevy::prelude::*;
@@ -168,6 +169,7 @@ fn spawn_snake(mut commands: Commands, mut snake_segments: ResMut<SnakeSegments>
                 },
                 ..default()
             })
+            .insert(Collider)
             .id(),
     );
 

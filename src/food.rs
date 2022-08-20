@@ -1,19 +1,16 @@
+use crate::collision::Collider;
+use crate::GameState;
 use bevy::math::const_vec3;
 use bevy::prelude::*;
-use crate::GameState;
 
 const FOOD_SIZE: Vec3 = const_vec3!([30.0, 30.0, 0.0]);
 const FOOD_COLOR: Color = Color::rgb(0.2, 0.7, 0.9);
-
 
 pub struct FoodPlugin;
 
 impl Plugin for FoodPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_system_set(
-                SystemSet::on_enter(GameState::Game).with_system(spawn_food)
-            );
+        app.add_system_set(SystemSet::on_enter(GameState::Game).with_system(spawn_food));
     }
 }
 
@@ -26,19 +23,23 @@ impl Plugin for FoodPlugin {
 #[derive(Component)]
 struct Food;
 
+// todo: collider: https://www.youtube.com/watch?v=WN0XK8wddac&t=465s
 
 fn spawn_food(mut commands: Commands) {
-    commands.spawn().insert(Food).insert_bundle(SpriteBundle {
-        transform: Transform {
-            translation: Vec3::new(0.0, 0.0, 0.0),
-            scale: FOOD_SIZE,
+    commands
+        .spawn()
+        .insert(Food)
+        .insert(Collider)
+        .insert_bundle(SpriteBundle {
+            transform: Transform {
+                translation: Vec3::new(0.0, 0.0, 0.0),
+                scale: FOOD_SIZE,
+                ..default()
+            },
+            sprite: Sprite {
+                color: FOOD_COLOR,
+                ..default()
+            },
             ..default()
-        },
-        sprite: Sprite {
-            color: FOOD_COLOR,
-            ..default()
-        },
-        ..default()
-    });
+        });
 }
-

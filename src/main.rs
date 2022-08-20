@@ -1,16 +1,18 @@
 mod audio;
+mod collision;
+mod food;
 mod menu;
 mod pause;
 mod snake;
-mod food;
 
 use crate::audio::GameAudioPlugin;
+use crate::food::FoodPlugin;
 use crate::menu::MenuPlugin;
 use crate::pause::PausePlugin;
 use crate::snake::SnakePlugin;
 use bevy::math::const_vec3;
 use bevy::prelude::*;
-use crate::food::FoodPlugin;
+use crate::collision::CollisionPlugin;
 
 const BACKGROUND_COLOR: Color = Color::rgb(0.95, 0.4, 0.4);
 
@@ -32,6 +34,7 @@ fn main() {
         .add_plugin(PausePlugin)
         .add_plugin(GameAudioPlugin)
         .add_plugin(FoodPlugin)
+        .add_plugin(CollisionPlugin)
         .insert_resource(ClearColor(BACKGROUND_COLOR))
         .add_state(GameState::Menu)
         .add_startup_system(setup)
