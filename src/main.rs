@@ -6,13 +6,13 @@ mod pause;
 mod snake;
 
 use crate::audio::GameAudioPlugin;
+use crate::collision::CollisionPlugin;
 use crate::food::FoodPlugin;
 use crate::menu::MenuPlugin;
 use crate::pause::PausePlugin;
 use crate::snake::SnakePlugin;
 use bevy::math::const_vec3;
 use bevy::prelude::*;
-use crate::collision::CollisionPlugin;
 
 const BACKGROUND_COLOR: Color = Color::rgb(0.95, 0.4, 0.4);
 

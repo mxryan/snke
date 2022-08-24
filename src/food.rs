@@ -1,8 +1,8 @@
-use std::time::SystemTime;
 use crate::collision::Collider;
 use crate::GameState;
 use bevy::math::const_vec3;
 use bevy::prelude::*;
+use std::time::SystemTime;
 
 const FOOD_SIZE: Vec3 = const_vec3!([30.0, 30.0, 0.0]);
 const FOOD_COLOR: Color = Color::rgb(0.2, 0.7, 0.9);
@@ -11,11 +11,9 @@ pub struct FoodPlugin;
 
 impl Plugin for FoodPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_system_set(SystemSet::on_enter(GameState::Game).with_system(spawn_food))
+        app.add_system_set(SystemSet::on_enter(GameState::Game).with_system(spawn_food))
             .add_system_set(SystemSet::on_update(GameState::Game).with_system(handle_food_consumed))
-            .add_event::<FoodConsumptionEvent>()
-        ;
+            .add_event::<FoodConsumptionEvent>();
     }
 }
 
