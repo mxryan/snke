@@ -43,7 +43,7 @@ enum SnakeDirection {
 }
 
 #[derive(Component)]
-struct SnakeHead {
+pub struct SnakeHead {
     body_length: u32,
     speed: f32,
     direction: SnakeDirection,
