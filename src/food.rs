@@ -49,8 +49,19 @@ fn spawn_food(mut commands: Commands) {
         });
 }
 
-fn handle_food_consumed(mut event_reader: EventReader<FoodConsumptionEvent>) {
+fn handle_food_consumed(
+    mut event_reader: EventReader<FoodConsumptionEvent>,
+    mut food_query: Query<Entity, With<Food>>,
+    mut commands: Commands
+) {
+    let x = food_query.single();
+    println!("x: {:?}", x);
+    // commands.entity(x).despawn();
     for food_event in event_reader.iter() {
         println!("HEYYYY WE ATE SOME FOOD!!!... {:?}", SystemTime::now());
+        // when we eat food, we need to:
+        // 1) make the eaten food dissapear
+        // 2) spawn a new food somewhere else
+        // 3) grow the snake
     }
 }
